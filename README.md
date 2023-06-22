@@ -9,8 +9,7 @@ which have only one instance on the scene.
 ### Why do you need this?  
 Imagine that you have a game with score system.  
 And you need to give only one score implementation to some UI implementations.  
-Singleton pattern gives you confidence that only one object  
-of singleton class will be implemented.  
+Singleton pattern gives you confidence that only one object of singleton class will be implemented.  
 
 ---  
 
@@ -19,52 +18,79 @@ All you need to implement this pattern is make the Instance property,
 for the class, which will be used to access the object.  
 Also you have to write some logic for the existence of only one object.  
 
-![Code Example Image](https://github.com/chugaister228/unity-singleton-pattern-implementation/blob/main/Prewievs/ScoreControllerScript.png)  
+```c#
+public class ScoreController : MonoBehaviour
+{
+    [SerializeField] private int scoreCount;
 
-On the image you can see the Instance property and  
-only one existence object logic wrote in the Awake.  
-Because of the static property Instance will be  
-asigned only once in the Awake, other asigned components will be destroyed.  
+    public int ScoreCount { get { return scoreCount; } }
+    public static ScoreController Instance { get; private set; }
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Debug.Log(gameObject.name + " deleted");
+            Destroy(this);
+        }
+        else
+        {
+            Instance = this;
+        }
+    }
+}
+```  
+
+In the code block you can see the Instance property and only one existence object logic wrote in the Awake.  
+Because of the static property Instance will be asigned only once in the Awake, other asigned components will be destroyed.  
 
 --- 
 
 ### How to use the Singleton class in other classes?  
-To use Singleton in other classes you have to  
-make an object of this class and asign the Instance of Singletone class.  
+To use Singleton in other classes you have to make an object of this class and asign the Instance of Singletone class.  
 
-![Code Example Image](https://github.com/chugaister228/unity-singleton-pattern-implementation/blob/main/Prewievs/ScoreTextScript.png)  
+```c#
+[RequireComponent(typeof(Text))]
+public class ScoreText : MonoBehaviour
+{
+    private Text scoreText;
+    private ScoreController scoreController;
 
-On the image you can see the ScoreController object,  
+    private void Start()
+    {
+        scoreText = GetComponent<Text>();
+        scoreController = ScoreController.Instance;
+        ScoreToText();
+    }
+
+    private void ScoreToText()
+    {
+        scoreText.text = "score: " + scoreController.ScoreCount.ToString();
+    }
+}
+```  
+
+In the code block you can see the ScoreController object,  
 inside of which is asigned the instance of ScoreController class.  
 
 --- 
 
 ### How it works?  
 
-Let`s create two score texts and two score controllers to check how it work.  
-
-![Hierarchy Example Image](https://github.com/chugaister228/unity-singleton-pattern-implementation/blob/main/Prewievs/Hierarchy.png)  
-
-![Inspector Example Image](https://github.com/chugaister228/unity-singleton-pattern-implementation/blob/main/Prewievs/ScoreControllerInspector.png)  
-
-![Inspector Example Image](https://github.com/chugaister228/unity-singleton-pattern-implementation/blob/main/Prewievs/ScoreController1Inspector.png)  
-
-Now we have two score controllers with diferent score given in the Inspector.  
-And two score texts, which have to show only one score controller`s score.  
+Let`s create two text objects to see score on the screem and  
+two objects with score controller component with different score given to see how it work.    
 
 Let`s run the game and see what happens.  
 
-![Game window Example Image](https://github.com/chugaister228/unity-singleton-pattern-implementation/blob/main/Prewievs/GameScreen.png)  
+You can see that text objects are:  
+```c#
+score: 20
+score: 20
+```
 
-![Console Example Image](https://github.com/chugaister228/unity-singleton-pattern-implementation/blob/main/Prewievs/DebugLog.png)  
-
-![Score controller inspector Example Image](https://github.com/chugaister228/unity-singleton-pattern-implementation/blob/main/Prewievs/ScoreControllerGameModeInspector.png)  
-
-On the images we can that UI shows score only of one score controller.  
-Also you can see that score controller`s component was deleted from  
-the first object.  
-We can conclude that our Singleton implementation do not delete component only  
-from newest created object.  
+We can understand that UI shows score only of one score controller.  
+Also you can see that score controller`s component was deleted from the first object by Debug.Log.  
+We can conclude that our Singleton implementation do not delete component only from newest created object.  
 
 ---  
 
